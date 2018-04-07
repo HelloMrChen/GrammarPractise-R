@@ -52,7 +52,7 @@ dim(bodyfat)
 
 library(rpart)
 set.seed(12345)
-ind2<-sample(2,nrow(bodyfat),replace=T,prob = c(0.7,0.3))
+ind2<-sample(2,nrow(bodyfat),replace=T,prob = c(0.7,0.3))#sample里的2即代表c(1:2)的意思
 
 trainData2<-bodyfat[ind2==1,]
 testData2<-bodyfat[ind2==2,]
@@ -71,20 +71,48 @@ text(bodyfatTree,use.n = T) #添加节点文字信息
 print(bodyfatTree$cptable)
 
 #选择具有最小误差的决策树，通过决策树对象的cptable中的xerror属性最小来选择。
-opt<-which.min(bodyfatTree$cptable[,"xerror"])
+opt<-which.min(bodyfatTree$cptable[,"xerror"]) 
 
 #取出所选对象的cp的值
 cp<-bodyfatTree$cptable[opt,"CP"]
 
 #决策树的剪枝
-bodyfat_prune<-prune(bodyfatTree,cp=cp)
+bodyfat_prune<-prune(bodyfatTree,cp=cp)  #通过cp值选择决策树，最终的决策树对象赋值给bodyfat_prune
 print(bodyfat_prune)
 plot(bodyfat_prune)
 text(bodyfat_prune,use.n = T)
 
 bodyfat.pre<-predict(bodyfat_prune,newdata = testData2)
-xlim<-range(bodyfat$DEXfat)
+xlim<-range(bodyfat$DEXfat)#设置x轴方位
 plot(bodyfat.pre~DEXfat,data=testData2,xlab="Oberserved",ylab="pre")
 abline(a=0,b=1)
 
 
+
+#补充知识：
+# 1、CP参数定义
+# 
+# cp: complexity parameter复杂性参数，用来修剪树的.
+# 
+# 当决策树复杂度超过一定程度后，随着复杂度的提高，测试集的分类精确度反而会降低。因此，建立的决策树不宜太复杂，
+# 需进行剪枝。该剪枝算法依赖于复杂性参数cp,cp随树复杂度的增加而减小，当增加一个节点引起的分类精确度变化量小于树
+# 复杂度变化的cp倍时，则须剪去该节点。故建立一棵既能精确分类，又不过度适合的决策树的关键是求解一个合适的cp值
+# 。一般选择错判率最小值对应的cp值来修树.
+
+# 2、CP选择问题。
+# 
+# 建立树模型要权衡两方面问题，一个是要拟合得使分组后的变异较小，另一个是要防止过度拟合，而使模型的误差过大，
+# 前者的参数是CP，后者的参数是Xerror。所以要在Xerror最小的情况下，也使CP尽量小。
+
+
+# 3、关于abilne()
+# 函数lines()其作用是在已有图上加线，命令为lines(x,y),其功能相当于plot(x,y,type="1")
+# 函数abline()可以在图上加直线，其使用方法有四种格式。
+# （1）abline(a,b)
+# 表示画一条y=a+bx的直线
+# （2）abline(h=y)
+# 表示画出一条过所有点得水平直线
+# （3）abline(v=x)
+# 表示画出一条过所有点的竖直直线
+# （4）abline(lm.obj)
+# 表示绘出线性模型得到的线性方程
