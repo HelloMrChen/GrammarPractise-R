@@ -74,9 +74,36 @@ pairs(irisTest,pch=pch,col=col)
 #两种效率一样，但可见第一种写法较为简单，第二种写法展示了pch、col属性的新用法
 
 
+#----使用聚类分析检测离群点
+#使用聚类分析也是检测离群点的方法之一，没有划到任何簇里的点便作为离群点
+#首先对iris的几列进行聚类分析
 
+irisKmean<-iris[,1:4]
+str(irisKmean)
+#聚类函数的调用，因为我们知道有三个类，所以将聚类点分为3个 
+kmeans.result<-kmeans(irisKmean,centers = 3)
+#查看中心点
+kmeans.result$centers
+#查看分类情况
+kmeans.result$cluster
 
+#根据每个点的分类记录其应对的聚类中心点
+centers<-kmeans.result$centers[kmeans.result$cluster]  
 
+#计算每个点到所属类别中心点的距离
+distance<-sqrt(rowSums((irisKmean-centers)^2))
+outliner<-order(distance,decreasing = T)[1:5]
+print(irisKmean[outliner,])
+
+#然后我们将离群点打印出来 
+#首先我们先按照Sepal.Length和Sepal.Width 来绘制所有的散点,按照聚类区分颜色
+plot(irisKmean[,1:2],col=kmeans.result$cluster,pch="*")
+
+#打印聚类的中心质心
+points(kmeans.result$centers,pch=8,col=1:3,cex=2) #这里col还用col=kmeans.result$cluster 赋值的话全为黑色，原因未知
+
+#打印离群点
+points(irisKmean[outliner,c("Sepal.Length","Sepal.Width")],col=4,pch="X")
 
 
 
